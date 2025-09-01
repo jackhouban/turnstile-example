@@ -1,3 +1,7 @@
-Replace the domain with the domain enable in the turnstile widget dash
+Add gradle.properties file in
 
-Replace site key found in turnstile dash
+/Users/username/.gradle/gradle.properties
+
+In gradle.properties file, add recaptcha key
+
+RECAPTCHA_KEY=abcdefg
