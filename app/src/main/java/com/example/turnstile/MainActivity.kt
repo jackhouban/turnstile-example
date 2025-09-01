@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.turnstile.ui.theme.TurnstileTheme
@@ -40,6 +41,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             text = "Hello $name!",
             modifier = modifier
         )
+        val recaptchaKey = stringResource(R.string.recaptcha_key)
         AndroidView(
             factory = { context ->
                 WebView(context)
@@ -47,7 +49,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             update = { webView ->
                 webView.settings.javaScriptEnabled = true
                 webView.settings.domStorageEnabled = true
-                webView.loadDataWithBaseURL("https://domainThatYouEnableOnTurnstileDash", turnstileHtml, "text/html", "UTF-8", null)
+                webView.loadDataWithBaseURL("https://dev.homely.com.au", html.replace("<RECAPTCHA_KEY>", recaptchaKey), "text/html", "UTF-8", null)
             }
         )
     }
@@ -61,37 +63,24 @@ fun GreetingPreview() {
     }
 }
 
-val turnstileHtml = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=_turnstileCb" async defer></script>
-        <style>
-            body {
-                text-align: center;
-            }
-            .container {
-                width: 80%; /* Or a fixed width */
-                margin: 0 auto; /* Centers the block-level element */
-            }
-        </style>
-    </head>
-    <body>
-        <div class="cf-turnstile" id="cf-turnstile"></div>
-        <script>
-            function _turnstileCb() {
-                console.log('_turnstileCb called');         
-
-                turnstile.render('#cf-turnstile', {
-                    sitekey: '0xreplacewithyoursitekey',
-                    theme: 'light',
-                    callback: function (token) {
-                        console.log('Challenge Success ' + token);
-                        Android.onChallenge(token)
-                    },
-                });
-            }
-        </script>
-    </body>
+val html = """
+    <html>
+        <head>
+            <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=<RECAPTCHA_KEY>" async defer></script>
+        </head>
+        <body>
+            <script type="text/javascript">
+                var onloadCallback = function() {
+                    console.log('Captcha is ready');
+                   
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute('<RECAPTCHA_KEY>', {action: 'submit'}).then(function(token) {
+                            // Add your logic to submit to your backend server here.
+                            console.log('The token: ' + token)
+                        });
+                    });
+                };
+            </script>
+        </body>
     </html>
 """.trimIndent()

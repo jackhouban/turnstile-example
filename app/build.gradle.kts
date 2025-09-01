@@ -1,3 +1,7 @@
+import com.android.build.api.variant.ResValue
+import com.android.build.api.variant.Variant
+import org.gradle.api.Project
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -37,6 +41,21 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+androidComponents {
+    onVariants {
+        it.addResValue(key = "recaptcha_key", type = "string", envOrProp("RECAPTCHA_KEY"))
+    }
+}
+
+fun Variant.addResValue(key: String, type: String, value: String) {
+    resValues.put(makeResValueKey(type, key), ResValue(value))
+}
+
+fun Project.envOrProp(name: String): String {
+    return providers.environmentVariable(name).orNull
+        ?: providers.gradleProperty(name).getOrElse("")
 }
 
 dependencies {
